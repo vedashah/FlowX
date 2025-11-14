@@ -25,10 +25,7 @@ This suite is essential for ensuring the reliability of mechanical subsystems su
 
 `motor_tests/` contains:
 
-- **test_pwm.py** – PWM signal generation and validation  
-- **test_esc.py** – Initialization and ramp tests for ESC-driven motors  
-- **test_load.py** – Load response and torque variation testing  
-- **motor_controller.py** – Unified motor control interface for reuse  
+- **test_pwm_4_motors.py** – PWM signal generation and validation  
 - **README.md** – Overview and instructions for this module  
 - **/logs** – Auto-generated test logs, timing data, and response plots (ignored by Git)  
 
@@ -41,8 +38,3 @@ This suite is essential for ensuring the reliability of mechanical subsystems su
 Before running tests:
 
 1. Ensure the Raspberry Pi GPIO is accessible over SSH  
-2. Install required libraries:  
-
-   ```bash
-   sudo apt install python3-gpiozero python3-rpi.gpio -y
-   pip3 install pigpio
