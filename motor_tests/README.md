@@ -1,4 +1,4 @@
-# 🧪 Motor Tests  
+#  Motor Tests  
 ### *FlowX Cold-Gas Thruster Test Bench – Motor & Actuation Validation Suite*
 
 The `motor_tests` directory contains all scripts, utilities, and documentation related to validating motor-driven systems used within the FlowX platform.  
@@ -7,7 +7,7 @@ This folder provides the full testing environment for those components.
 
 ---
 
-## 🎯 Purpose
+##  Purpose
 
 The goal of `motor_tests` is to:
 
@@ -21,7 +21,7 @@ This suite is essential for ensuring the reliability of mechanical subsystems su
 
 ---
 
-## 📂 Folder Contents
+##  Folder Contents
 
 `motor_tests/` contains:
 
@@ -33,7 +33,7 @@ This suite is essential for ensuring the reliability of mechanical subsystems su
 
 ---
 
-## ⚙️ Setup Requirements
+## Setup Requirements
 
 Before running tests:
 
