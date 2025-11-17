@@ -1,5 +1,5 @@
 # FlowX – Space Drone Reconnaissance Platform  
-### Cold-gas thruster-based lunar exploration drone (TAMU ESET 429 Capstone)
+### Cold-gas thruster-based lunar exploration drone (TAMU ESET 419 Capstone)
 
 FlowX is a proof-of-concept **cold-gas propelled reconnaissance drone** designed for low-gravity lunar environments.  
 The system is engineered to support future **Permanently Shadowed Region (PSR)** exploration missions by providing high-mobility, low-risk flight capabilities using **CO₂/N₂ cold-gas thrusters**.
