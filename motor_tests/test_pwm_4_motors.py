@@ -30,7 +30,7 @@ ARM_TIME_SEC = 5       # How long to sit at zero throttle to arm ESCs
 STEP_HOLD_SEC = 3      # How long to hold each throttle step
 
 # Throttle levels to test (0.0 = min, 1.0 = max)
-THROTTLE_STEPS = [0.2, 0.4, 0.6, 0.8, 1.0]
+THROTTLE_STEPS = [0.1, 0.3, 0.6, 0.2, 0.1]
 
 # ==========================================================================
 
