@@ -1,9 +1,7 @@
 import pigpio
 import time
 
-# ----------------------------
-# WIRING / MOTOR MAP
-# ----------------------------
+
 PPM_PIN = 17
 
 M1_FRONT_LEFT  = 27
@@ -13,13 +11,7 @@ M4_BACK_RIGHT  = 16
 
 MOTORS = [M1_FRONT_LEFT, M2_FRONT_RIGHT, M3_BACK_LEFT, M4_BACK_RIGHT]
 
-# ----------------------------
-# CHANNEL MAPPING (typical)
-# CH1 = Roll  (right stick L/R)
-# CH2 = Pitch (right stick U/D)
-# CH3 = Throttle (left stick U/D)
-# CH5 = Arm switch
-# ----------------------------
+
 CH_ROLL     = 0   # CH1
 CH_PITCH    = 1   # CH2
 CH_THROTTLE = 2   # CH3
@@ -28,9 +20,7 @@ CH_ARM      = 4   # CH5
 CHANNELS = 8
 SYNC_GAP_US = 3000
 
-# ----------------------------
-# SAFETY / TUNING
-# ----------------------------
+
 PWM_MIN = 1000
 PWM_MAX = 2000
 
@@ -40,17 +30,14 @@ FAILSAFE_TIMEOUT_S = 0.5
 
 DEADBAND_US = 30
 
-# Gains (0..1 recommended to start)
 ROLL_GAIN  = 0.8     # left/right effect
 PITCH_GAIN = 0.8     # front/back effect
 
-# If directions feel backwards, flip these signs (+1 or -1)
+
 ROLL_DIR  = +1       # if wrong, change to -1
 PITCH_DIR = +1       # if wrong, change to -1
 
-# ----------------------------
-# SETUP
-# ----------------------------
+
 pi = pigpio.pi()
 if not pi.connected:
     print("Could not connect to pigpiod. Run: sudo pigpiod")
@@ -144,22 +131,11 @@ try:
             time.sleep(0.05)
             continue
 
-        # ----------------------------
-        # MIXING
-        # roll  -> left/right split
-        # pitch -> front/back split
-        #
-        # roll_delta  ranges ~[-500..+500] scaled by gain
-        # pitch_delta ranges ~[-500..+500] scaled by gain
-        # ----------------------------
+      
         roll_delta  = (roll  - 1500) * ROLL_GAIN  * ROLL_DIR
         pitch_delta = (pitch - 1500) * PITCH_GAIN * PITCH_DIR
 
-        # Motor outputs:
-        # Front Left  (M1): thr + pitch + roll
-        # Front Right (M2): thr + pitch - roll
-        # Back  Left  (M3): thr - pitch + roll
-        # Back  Right (M4): thr - pitch - roll
+
         m1 = clamp(thr + pitch_delta + roll_delta, PWM_MIN, PWM_MAX)
         m2 = clamp(thr + pitch_delta - roll_delta, PWM_MIN, PWM_MAX)
         m3 = clamp(thr - pitch_delta + roll_delta, PWM_MIN, PWM_MAX)
