@@ -2,18 +2,14 @@ import pigpio
 import serial
 import time
 
-# =============================
-# ========= SERIAL RC =========
-# =============================
-
+# RC Serial Setup
 ser = serial.Serial('/dev/serial0', 420000, timeout=0.01)
 
 def read_channels():
+    #Read RAW Controller inputs 
     ser.reset_input_buffer()
     data = ser.read(26)
-
     if len(data) >= 24 and data[0] == 0xC8:
-
         ch1 = ((data[3] | data[4] << 8) & 0x07FF)
         ch2 = ((data[4] >> 3 | data[5] << 5) & 0x07FF)
         ch3 = ((data[5] >> 6 | data[6] << 2 | data[7] << 10) & 0x07FF)
@@ -22,21 +18,14 @@ def read_channels():
         ch6 = ((data[9] >> 7 | data[10] << 1 | data[11] << 9) & 0x07FF)
         ch7 = ((data[11] >> 2 | data[12] << 6) & 0x07FF)
         ch8 = ((data[12] >> 5 | data[13] << 3) & 0x07FF)
-
         return [ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8]
-
     return None
 
-
 def map_channel(value):
-    # Convert 0–2047 → 1000–2000 µs
+    #Convert ADC to microseconds (within 1000-2000 microseconds)
     return 1000 + (value / 2047.0) * 1000
 
-
-# =============================
-# ========= MOTOR SETUP =======
-# =============================
-
+# Motor Pinouts and Setup
 M1 = 27
 M2 = 26
 M3 = 23
@@ -45,9 +34,6 @@ MOTORS = [M1, M2, M3, M4]
 
 PWM_MIN = 1000
 PWM_MAX = 2000
-
-ARM_THRESHOLD = 1600
-THROTTLE_ARM_MAX = 1050
 
 ROLL_GAIN  = 0.8
 PITCH_GAIN = 0.8
@@ -70,45 +56,53 @@ def set_all(pw):
     for m in MOTORS:
         set_motor(m, pw)
 
-# =============================
-# ========= MAIN LOOP =========
-# =============================
-
+#Main Logic Loop
 print("Serial RC Mixer Running... Debug Mode ON")
 set_all(PWM_MIN)
-
 armed = False
 
 try:
     while True:
-
         ch = read_channels()
         if ch is None:
             continue
 
+        #Raw Serial Channel Readings
         roll_raw  = ch[0]
         pitch_raw = ch[1]
-        thr_raw   = ch[2]
-        arm_raw   = ch[4]
+        thr_raw   = ch[2]   # CH3 (throttle)
+        yaw_raw   = ch[3]   # CH4 (yaw)
+        arm_raw   = ch[5]   # CH6 (arm switch)
 
+        # ARMING LOGIC
+        # Disarm as soon as SA switch is turned MIDDLE or LOW
+        if arm_raw > 200 and armed:
+            armed = False
+            set_all(PWM_MIN)
+            print("\nDISARMED (SA switched high)")
+
+        # Arm logic for left stick DOWN to the LEFT and SA set UP
+        if not armed:
+            if thr_raw < 200 and yaw_raw < 200 and arm_raw < 200:
+                armed = True
+                print("\nARMED")
+
+        # MOTOR OUTPUT
+        if not armed:
+            # Disarmed: Motors stay at PWM_MIN
+            set_all(PWM_MIN)
+            print(
+                f"DISARMED | Raw CH={roll_raw},{pitch_raw},{thr_raw},{arm_raw}        ",
+                end="\r"
+            )
+            time.sleep(0.005)
+            continue
+
+        #ONCE ARMED: RUN MIXER
         roll  = map_channel(roll_raw)
         pitch = map_channel(pitch_raw)
         thr   = map_channel(thr_raw)
-        arm   = map_channel(arm_raw)
 
-        want_arm = arm > ARM_THRESHOLD
-
-        # ARM LOGIC
-        if want_arm and not armed:
-            if thr <= THROTTLE_ARM_MAX:
-                armed = True
-                print("\nARMED")
-        if not want_arm and armed:
-            armed = False
-            set_all(PWM_MIN)
-            print("\nDISARMED")
-
-        # MOTOR OUTPUT
         roll_delta  = (roll  - 1500) * ROLL_GAIN  * ROLL_DIR
         pitch_delta = (pitch - 1500) * PITCH_GAIN * PITCH_DIR
 
@@ -122,10 +116,9 @@ try:
         set_motor(M3, m3)
         set_motor(M4, m4)
 
-        # ===== DEBUG OUTPUT =====
+        #Print values for debugging
         print(
-            f"ARMED={armed} | "
-            f"THR={int(thr)} ROLL={int(roll)} PITCH={int(pitch)} | "
+            f"ARMED | THR={int(thr)} | "
             f"M1={int(m1)} M2={int(m2)} M3={int(m3)} M4={int(m4)} | "
             f"Raw CH={roll_raw},{pitch_raw},{thr_raw},{arm_raw}",
             end="\r"
