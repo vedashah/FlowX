@@ -6,7 +6,7 @@ import time
 ser = serial.Serial('/dev/serial0', 420000, timeout=0.01)
 
 def read_channels():
-    #Read RAW Controller inputs
+    # Read RAW Controller inputs
     ser.reset_input_buffer()
     data = ser.read(26)
     if len(data) >= 24 and data[0] == 0xC8:
@@ -22,26 +22,32 @@ def read_channels():
     return None
 
 def map_channel(value):
-    #Convert ADC to microseconds (within 1000-2000 microseconds)
+    # Convert ADC to microseconds (within 1000-2000 microseconds)
     return 1000 + (value / 2047.0) * 1000
 
-# Motor Pinouts and Setup
-M1 = 27
-M2 = 26
-M3 = 23
-M4 = 16
+# ------------------ Motor GPIO Mapping (YOUR REQUEST) ------------------
+# BetaFlight diagram positions:
+# M2 = Front Right, M4 = Front Left, M1 = Rear Right, M3 = Rear Left
+#
+# Your GPIOs:
+M1 = 23  # Rear Right
+M2 = 16  # Front Right
+M3 = 26  # Rear Left
+M4 = 27  # Front Left
 MOTORS = [M1, M2, M3, M4]
 
 PWM_MIN = 1000
 PWM_MAX = 2000
 
+# Gains
 ROLL_GAIN  = 0.8
 PITCH_GAIN = 0.8
-YAW_GAIN   = 0.6   # <-- ADD: start smaller than roll/pitch
+YAW_GAIN   = 0.6
 
-ROLL_DIR  = +1
+# Directions (flip any of these if a stick does the opposite of what you expect)
+ROLL_DIR  = -1
 PITCH_DIR = +1
-YAW_DIR   = +1     # <-- flip to -1 if yaw is backwards
+YAW_DIR   = -1
 
 pi = pigpio.pi()
 if not pi.connected:
@@ -58,7 +64,7 @@ def set_all(pw):
     for m in MOTORS:
         set_motor(m, pw)
 
-#Main Logic Loop
+# ------------------ Main Logic Loop ------------------
 print("Serial RC Mixer Running... Debug Mode ON")
 set_all(PWM_MIN)
 armed = False
@@ -69,14 +75,14 @@ try:
         if ch is None:
             continue
 
-        #Raw Serial Channel Readings
+        # Raw Serial Channel Readings (0..2047-ish)
         roll_raw  = ch[0]
         pitch_raw = ch[1]
         thr_raw   = ch[2]   # CH3 (throttle)
         yaw_raw   = ch[3]   # CH4 (yaw)
         arm_raw   = ch[5]   # CH6 (arm switch)
 
-        # ARMING LOGIC
+        # ------------------ ARMING LOGIC ------------------
         if arm_raw > 200 and armed:
             armed = False
             set_all(PWM_MIN)
@@ -87,7 +93,7 @@ try:
                 armed = True
                 print("\nARMED")
 
-        # MOTOR OUTPUT
+        # ------------------ DISARMED OUTPUT ------------------
         if not armed:
             set_all(PWM_MIN)
             print(
@@ -97,32 +103,40 @@ try:
             time.sleep(0.005)
             continue
 
-        #ONCE ARMED: RUN MIXER
+        # ------------------ ONCE ARMED: RUN MIXER ------------------
         roll  = map_channel(roll_raw)
         pitch = map_channel(pitch_raw)
         thr   = map_channel(thr_raw)
-        yaw   = map_channel(yaw_raw)  # <-- ADD
+        yaw   = map_channel(yaw_raw)
 
-        roll_delta  = (roll  - 1500) * ROLL_GAIN  * ROLL_DIR
-        pitch_delta = (pitch - 1500) * PITCH_GAIN * PITCH_DIR
-        yaw_delta   = (yaw   - 1500) * YAW_GAIN   * YAW_DIR   # <-- ADD
+        # Commands about center (µs)
+        roll_cmd  = (roll  - 1500) * ROLL_GAIN  * ROLL_DIR
+        pitch_cmd = (pitch - 1500) * PITCH_GAIN * PITCH_DIR
+        yaw_cmd   = (yaw   - 1500) * YAW_GAIN   * YAW_DIR
 
-        # Quad X yaw mix:
-        # Two motors get +yaw, two get -yaw.
-        # Which motors are + vs - depends on your CW/CCW props.
-        #
-        # Start with this:
-        m1 = clamp(thr + pitch_delta + roll_delta + yaw_delta, PWM_MIN, PWM_MAX)
-        m2 = clamp(thr + pitch_delta - roll_delta - yaw_delta, PWM_MIN, PWM_MAX)
-        m3 = clamp(thr - pitch_delta + roll_delta - yaw_delta, PWM_MIN, PWM_MAX)
-        m4 = clamp(thr - pitch_delta - roll_delta + yaw_delta, PWM_MIN, PWM_MAX)
+        # Roll: left +, right -
+        rL, rR = +roll_cmd, -roll_cmd
+
+        # Pitch: rear +, front -
+        pF, pB = -pitch_cmd, +pitch_cmd
+
+        # Yaw: you said M1 & M4 are CW, M2 & M3 are CCW
+        # Convention here: CCW motors get +yaw_cmd, CW motors get -yaw_cmd
+        Y1, Y2, Y3, Y4 = -1, +1, +1, -1
+
+        # Motor outputs
+        # M1 = Rear Right, M2 = Front Right, M3 = Rear Left, M4 = Front Left
+        m1 = clamp(thr + pB + rR + Y1 * yaw_cmd, PWM_MIN, PWM_MAX)
+        m2 = clamp(thr + pF + rR + Y2 * yaw_cmd, PWM_MIN, PWM_MAX)
+        m3 = clamp(thr + pB + rL + Y3 * yaw_cmd, PWM_MIN, PWM_MAX)
+        m4 = clamp(thr + pF + rL + Y4 * yaw_cmd, PWM_MIN, PWM_MAX)
 
         set_motor(M1, m1)
         set_motor(M2, m2)
         set_motor(M3, m3)
         set_motor(M4, m4)
 
-        #Print values for debugging
+        # Print values for debugging
         print(
             f"ARMED | THR={int(thr)} YAW={int(yaw)} | "
             f"M1={int(m1)} M2={int(m2)} M3={int(m3)} M4={int(m4)} | "
