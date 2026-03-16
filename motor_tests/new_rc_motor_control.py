@@ -40,12 +40,12 @@ PWM_MIN = 1000
 PWM_MAX = 2000
 
 # Gains
-ROLL_GAIN  = 0.8
-PITCH_GAIN = 0.8
-YAW_GAIN   = 0.6
+ROLL_GAIN  = 0.2
+PITCH_GAIN = 0.4
+YAW_GAIN   = 0.7
 
 # Directions (flip any of these if a stick does the opposite of what you expect)
-ROLL_DIR  = -1
+ROLL_DIR  = +1
 PITCH_DIR = +1
 YAW_DIR   = -1
 
