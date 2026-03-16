@@ -1,5 +1,5 @@
 # FlowX – Cold-Gas Thruster Reconnaissance Drone
-### TAMU ESET 419 Senior Capstone Project
+### TAMU Senior Capstone Project
 
 FlowX is a proof-of-concept **cold-gas propelled reconnaissance drone** designed for low-gravity lunar environments. The system targets future **Permanently Shadowed Region (PSR)** exploration missions by demonstrating high-mobility, propellant-efficient flight using **CO₂/N₂ cold-gas thrusters** controlled by a Raspberry Pi embedded system.
 
@@ -144,4 +144,4 @@ Nozzle thrust data (CSV + PNG plots) lives in `nozzle_test_results/`.
 
 ## Team
 
-TAMU ESET 419 Capstone — Spring/Fall Semester
+TAMU FlowX
