@@ -18,10 +18,16 @@ for pin_num in range(8):  # GPA0–GPA7
     valve.value = False
     valves.append(valve)
 
+# ------------------ Valve Layout ------------------
+# GPA0 = Valve 1 = Back Left
+# GPA1 = Valve 2 = Front Left
+# GPA2 = Valve 3 = Front Right
+# GPA3 = Valve 4 = Back Right
 
-# Example valve groups (change these for your nozzle layout)
-ROLL_VALVES = [valves[0], valves[3]]     # example
-PITCH_VALVES = [valves[1], valves[2]]    # example
+BACK_LEFT   = valves[0]
+FRONT_LEFT  = valves[1]
+FRONT_RIGHT = valves[2]
+BACK_RIGHT  = valves[3]
 
 
 def all_off():
@@ -29,42 +35,57 @@ def all_off():
         valve.value = False
 
 
-def roll():
+def roll_left():
     all_off()
-    for valve in ROLL_VALVES:
-        valve.value = True
-    print("ROLL command active")
+    FRONT_RIGHT.value = True
+    BACK_RIGHT.value = True
+    print("ROLL LEFT active (Front Right + Back Right)")
 
 
-def pitch():
+def roll_right():
     all_off()
-    for valve in PITCH_VALVES:
-        valve.value = True
-    print("PITCH command active")
+    FRONT_LEFT.value = True
+    BACK_LEFT.value = True
+    print("ROLL RIGHT active (Front Left + Back Left)")
+
+
+def pitch_forward():
+    all_off()
+    BACK_LEFT.value = True
+    BACK_RIGHT.value = True
+    print("PITCH FORWARD active (Back Left + Back Right)")
+
+
+def pitch_back():
+    all_off()
+    FRONT_LEFT.value = True
+    FRONT_RIGHT.value = True
+    print("PITCH BACK active (Front Left + Front Right)")
 
 
 try:
-
     print("Control Mode")
-    print("1 = Roll")
-    print("2 = Pitch")
+    print("1 = Roll Left")
+    print("2 = Roll Right")
+    print("3 = Pitch Forward")
+    print("4 = Pitch Back")
     print("0 = All Off")
     print("Ctrl+C = Exit")
 
     while True:
-
         cmd = input("Enter command: ")
 
         if cmd == "1":
-            roll()
-
+            roll_left()
         elif cmd == "2":
-            pitch()
-
+            roll_right()
+        elif cmd == "3":
+            pitch_forward()
+        elif cmd == "4":
+            pitch_back()
         elif cmd == "0":
             all_off()
             print("All valves OFF")
-
         else:
             print("Invalid command")
 
