@@ -1,0 +1,54 @@
+# ─── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.installed.cfg
+
+# ─── Virtual Environments ──────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+.env
+
+# ─── Test Rig Logs (generated at runtime) ──────────────────
+logs/*.csv
+
+# ─── Nozzle Test Data (commit intentionally only) ──────────
+# Comment out the lines below to track specific result files
+# nozzle_test_results/*.csv
+# nozzle_test_results/*.png
+
+# ─── IDE / Editor ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Raspberry Pi / System ─────────────────────────────────
+*.so
+*.ko
+*.o
+
+# ─── Secrets / Config ──────────────────────────────────────
+.env
+secrets.py
+config_local.py

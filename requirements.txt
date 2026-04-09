@@ -1,0 +1,24 @@
+# FlowX – Python Dependencies
+# Install with: pip install -r requirements.txt
+#
+# Note: RPi.GPIO, smbus, and smbus2 are pre-installed on Raspberry Pi OS.
+# pigpio requires the daemon: sudo pigpiod
+
+# GPIO & Hardware
+pigpio>=1.78
+RPi.GPIO>=0.7.1
+gpiozero>=2.0
+
+# Serial Communication
+pyserial>=3.5
+
+# I²C / Sensors
+smbus2>=0.4.2
+adafruit-circuitpython-mcp230xx>=2.5.0
+adafruit-blinka>=8.0.0
+
+# Load Cell
+hx711>=1.1.2
+
+# Data & Plotting
+matplotlib>=3.7.0
